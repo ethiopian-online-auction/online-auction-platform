@@ -1,0 +1,31 @@
+{
+  "name": "online-auction-platform",
+  "version": "1.0.0",
+  "description": "Secure Online Auction Platform with AI, Blockchain &amp; Ethiopian Languages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethiopian-online-auction/online-auction-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ethiopian-online-auction/online-auction-platform/issues"
+  },
+  "homepage": "https://github.com/ethiopian-online-auction/online-auction-platform#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.3",
+    "nodemon": "^3.1.14",
+    "socket.io": "^4.8.3"
+  }
+}
