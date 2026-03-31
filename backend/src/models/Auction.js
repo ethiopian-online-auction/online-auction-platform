@@ -31,6 +31,12 @@ type: mongoose.Schema.Types.ObjectId,
 ref: "User"
 },
 
+seller: {
+type: mongoose.Schema.Types.ObjectId,
+ref: "User",
+required: true
+},
+
 startTime: {
 type: Date,
 required: true
@@ -38,12 +44,6 @@ required: true
 
 endTime: {
 type: Date,
-required: true
-},
-
-seller: {
-type: mongoose.Schema.Types.ObjectId,
-ref: "User",
 required: true
 },
 
@@ -55,8 +55,19 @@ default: "pending"
 
 paymentStatus: {
 type: String,
-enum: ["pending", "paid"],
+enum: ["pending", "paid", "released", "refunded"],
 default: "pending"
+},
+
+deliveryStatus: {
+type: String,
+enum: ["pending", "shipped", "delivered"],
+default: "pending"
+},
+
+dispute: {
+type: Boolean,
+default: false
 }
 
 },

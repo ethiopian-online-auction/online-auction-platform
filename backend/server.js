@@ -11,6 +11,8 @@ autoEndAuctions();
 
 const paymentRoutes = require("./src/routes/paymentRoutes");
 
+const escrowRoutes = require("./src/routes/escrowRoutes");
+
 
 
 const connectDB = require("./src/config/db");
@@ -23,7 +25,7 @@ const bidRoutes = require("./src/routes/bidRoutes");
 const auctionRoutes = require("./src/routes/auctionRoutes");
 
 const app = express();
-
+app.use("/api/escrow", escrowRoutes);
 app.use(cors());
 app.use(express.json());
 app.use("/api/payments", paymentRoutes);
