@@ -4,11 +4,14 @@ const User = require("../models/User");
 const protect = async (req, res, next) => {
 try {
 
-const token = req.headers.authorization;
+let token = req.headers.authorization;
 
 if (!token) {
 return res.status(401).json({ message: "Not authorized" });
 }
+
+// Remove Bearer prefix if present
+token = token.startsWith("Bearer ") ? token.slice(7) : token;
 
 const decoded = jwt.verify(token, process.env.JWT_SECRET);
 

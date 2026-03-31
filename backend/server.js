@@ -6,6 +6,10 @@ const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const protect = require("./src/middleware/authMiddleware");
 const authorize = require("./src/middleware/roleMiddleware");
+const bidRoutes = require("./src/routes/bidRoutes");
+
+
+const auctionRoutes = require("./src/routes/auctionRoutes");
 
 const app = express();
 
@@ -13,6 +17,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/bids", bidRoutes);
+app.use("/api/auctions", auctionRoutes);
 
 app.get(
 "/api/admin",

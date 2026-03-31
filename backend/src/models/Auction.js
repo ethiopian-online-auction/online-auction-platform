@@ -2,26 +2,56 @@ const mongoose = require("mongoose");
 
 const auctionSchema = new mongoose.Schema(
 {
-  title: String,
-  description: String,
-  image: String,
+title: {
+type: String,
+required: true
+},
 
-  startingPrice: Number,
-  currentPrice: Number,
+description: {
+type: String,
+required: true
+},
 
-  startTime: Date,
-  endTime: Date,
+image: {
+type: String
+},
 
-  status: {
-    type: String,
-    enum: ["active", "ended"],
-    default: "active"
-  },
+category: {
+type: String
+},
 
-  seller: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  }
+startingPrice: {
+type: Number,
+required: true
+},
+
+currentBid: {
+type: Number,
+default: 0
+},
+
+startTime: {
+type: Date,
+required: true
+},
+
+endTime: {
+type: Date,
+required: true
+},
+
+seller: {
+type: mongoose.Schema.Types.ObjectId,
+ref: "User",
+required: true
+},
+
+status: {
+type: String,
+enum: ["pending", "active", "ended"],
+default: "pending"
+}
+
 },
 { timestamps: true }
 );

@@ -2,17 +2,23 @@ const mongoose = require("mongoose");
 
 const bidSchema = new mongoose.Schema(
 {
-  amount: Number,
+auction: {
+type: mongoose.Schema.Types.ObjectId,
+ref: "Auction",
+required: true
+},
 
-  bidder: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+bidder: {
+type: mongoose.Schema.Types.ObjectId,
+ref: "User",
+required: true
+},
 
-  auction: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Auction"
-  }
+amount: {
+type: Number,
+required: true
+}
+
 },
 { timestamps: true }
 );
