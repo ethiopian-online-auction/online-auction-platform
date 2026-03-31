@@ -26,7 +26,8 @@ try {
 
 const auctions = await Auction
 .find()
-.populate("seller", "name email");
+.populate("seller", "name email")
+.populate("winner", "name email");
 
 res.json(auctions);
 
@@ -36,13 +37,14 @@ res.status(500).json({ error: error.message });
 };
 
 
-// Get single auction with bids
+// Get single auction with bids + winner
 exports.getAuction = async (req, res) => {
 try {
 
 const auction = await Auction
 .findById(req.params.id)
-.populate("seller", "name email");
+.populate("seller", "name email")
+.populate("winner", "name email");
 
 if (!auction) {
 return res.status(404).json({

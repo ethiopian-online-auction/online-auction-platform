@@ -12,13 +12,9 @@ type: String,
 required: true
 },
 
-image: {
-type: String
-},
+image: String,
 
-category: {
-type: String
-},
+category: String,
 
 startingPrice: {
 type: Number,
@@ -28,6 +24,11 @@ required: true
 currentBid: {
 type: Number,
 default: 0
+},
+
+winner: {
+type: mongoose.Schema.Types.ObjectId,
+ref: "User"
 },
 
 startTime: {
@@ -49,6 +50,12 @@ required: true
 status: {
 type: String,
 enum: ["pending", "active", "ended"],
+default: "pending"
+},
+
+paymentStatus: {
+type: String,
+enum: ["pending", "paid"],
 default: "pending"
 }
 

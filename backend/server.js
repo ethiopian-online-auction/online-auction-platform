@@ -2,6 +2,17 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+const cron = require("node-cron");
+const autoEndAuctions = require("./src/utils/auctionAutoEnd");
+
+cron.schedule("*/10 * * * * *", () => {
+autoEndAuctions();
+});
+
+const paymentRoutes = require("./src/routes/paymentRoutes");
+
+
+
 const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const protect = require("./src/middleware/authMiddleware");
@@ -15,7 +26,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
+app.use("/api/payments", paymentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/bids", bidRoutes);
 app.use("/api/auctions", auctionRoutes);
