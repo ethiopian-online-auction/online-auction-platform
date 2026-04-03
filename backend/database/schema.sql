@@ -230,3 +230,4 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
 
 CREATE TRIGGER update_auctions_updated_at BEFORE UPDATE ON auctions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+// Database initialized
