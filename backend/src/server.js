@@ -129,3 +129,4 @@ process.on('SIGTERM', () => {
 });
 
 module.exports = { app, io };
+// Backend core initialized
