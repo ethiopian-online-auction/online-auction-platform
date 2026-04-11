@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
+import SellerAnalyticsCharts from '@/components/SellerAnalyticsCharts';
 
 export default function SellerDashboardPage() {
   const { user, isAuthenticated } = useAuth();
@@ -50,14 +51,14 @@ export default function SellerDashboardPage() {
       if (auctionsRes.success && auctionsRes.data) {
         const auctionsList = Array.isArray(auctionsRes.data) ? auctionsRes.data : (auctionsRes.data.auctions || []);
         setAuctions(auctionsList);
-        
+
         // Calculate stats
         const active = auctionsList.filter((a: any) => a.status === 'active').length;
         const ended = auctionsList.filter((a: any) => a.status === 'ended' || a.status === 'completed');
         const totalRevenue = ended.reduce((sum: number, a: any) => sum + parseFloat(a.current_bid || 0), 0);
         const totalBids = auctionsList.reduce((sum: number, a: any) => sum + parseInt(a.total_bids || 0), 0);
         const conversionRate = auctionsList.length > 0 ? (ended.length / auctionsList.length) * 100 : 0;
-        
+
         setStats({
           totalRevenue,
           activeAuctions: active,
@@ -74,11 +75,11 @@ export default function SellerDashboardPage() {
 
   const handleEndAuction = async (auctionId: string) => {
     if (!confirm('Are you sure you want to end this auction early?')) return;
-    
+
     try {
       const api = (await import('@/lib/api')).default;
       const response = await api.put(`/auctions/${auctionId}`, { status: 'ended' });
-      
+
       if (response.success) {
         alert('✅ Auction ended successfully!');
         fetchSellerData();
@@ -92,11 +93,11 @@ export default function SellerDashboardPage() {
 
   const handleDeleteAuction = async (auctionId: string) => {
     if (!confirm('Are you sure you want to delete this auction? This cannot be undone.')) return;
-    
+
     try {
       const api = (await import('@/lib/api')).default;
       const response = await api.delete(`/auctions/${auctionId}`);
-      
+
       if (response.success) {
         alert('✅ Auction deleted successfully!');
         fetchSellerData();
@@ -119,7 +120,7 @@ export default function SellerDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -200,23 +201,24 @@ export default function SellerDashboardPage() {
                 { id: 'overview', name: 'Overview', count: auctions.length },
                 { id: 'active', name: 'Active', count: activeAuctions.length },
                 { id: 'pending', name: 'Pending', count: pendingAuctions.length },
-                { id: 'ended', name: 'Ended', count: endedAuctions.length }
+                { id: 'ended', name: 'Ended', count: endedAuctions.length },
+                { id: 'analytics', name: '📊 Analytics', count: null }
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm transition ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition ${activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
                 >
                   {tab.name}
-                  <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
-                    activeTab === tab.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {tab.count}
-                  </span>
+                  {tab.count !== null && (
+                    <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${activeTab === tab.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                      {tab.count}
+                    </span>
+                  )}
                 </button>
               ))}
             </nav>
@@ -284,6 +286,13 @@ export default function SellerDashboardPage() {
               )}
             </div>
           )}
+
+          {activeTab === 'analytics' && (
+            <div className="space-y-6">
+              <h2 className="text-xl font-bold text-gray-900">Analytics</h2>
+              <SellerAnalyticsCharts auctions={auctions} />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -301,12 +310,12 @@ function AuctionsList({ auctions, onEnd, onDelete, router }: any) {
           images = [];
         }
         const imageUrl = Array.isArray(images) && images.length > 0 ? images[0] : '/Image/Iphone promax-15.webp';
-        
+
         return (
           <div key={auction.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
             <div className="flex items-center gap-4">
               <img src={imageUrl} alt={auction.title} className="w-24 h-24 object-cover rounded-lg" />
-              
+
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-gray-900">{auction.title}</h3>
                 <p className="text-sm text-gray-600 mb-2">{auction.category}</p>
@@ -317,11 +326,10 @@ function AuctionsList({ auctions, onEnd, onDelete, router }: any) {
                   <span className="text-gray-600">
                     Bids: <span className="font-semibold text-gray-900">{auction.total_bids || 0}</span>
                   </span>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    auction.status === 'active' ? 'bg-green-100 text-green-700' :
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${auction.status === 'active' ? 'bg-green-100 text-green-700' :
                     auction.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                      'bg-gray-100 text-gray-700'
+                    }`}>
                     {auction.status}
                   </span>
                 </div>
