@@ -1,10 +1,11 @@
 const { query, getClient } = require('../config/database');
 const fraudDetectionService = require('../services/ml-fraud-detection.service');
+const notificationService = require('../services/notification.service');
 
 // Place a bid
 const placeBid = async (req, res) => {
   const client = await getClient();
-  
+
   try {
     const { auctionId, amount } = req.body;
     const { userId } = req.user;
@@ -142,7 +143,7 @@ const placeBid = async (req, res) => {
     if (currentBidderResult.rows.length > 0) {
       const previousBidder = currentBidderResult.rows[0];
       const refundAmount = parseFloat(previousBidder.amount);
-      
+
       await client.query(
         `UPDATE users SET wallet_balance = wallet_balance + $1 WHERE id = $2`,
         [refundAmount, previousBidder.bidder_id]
@@ -195,28 +196,34 @@ const placeBid = async (req, res) => {
       [amount, auctionId]
     );
 
-    // Create notification for seller
-    await client.query(
-      `INSERT INTO notifications (user_id, type, title, message, related_auction_id)
-       VALUES ($1, 'new_bid', 'New Bid Received', 
-       'Someone placed a bid of ${amount} ETB on your auction', $2)`,
-      [auction.seller_id, auctionId]
-    );
+    await client.query('COMMIT');
+
+    // Real-time + persistent notifications (after commit so DB is consistent)
+    const io = req.app.get('io');
+
+    // Notify seller of new bid
+    await notificationService.createNotification({
+      userId: auction.seller_id,
+      type: 'new_bid',
+      title: 'New Bid Received',
+      message: `Someone placed a bid of ${amount} ETB on your auction "${auction.title}"`,
+      auctionId,
+      io
+    });
 
     // Notify previous bidder they were outbid
     if (currentBidderResult.rows.length > 0) {
-      await client.query(
-        `INSERT INTO notifications (user_id, type, title, message, related_auction_id)
-         VALUES ($1, 'outbid', 'You were outbid', 
-         'Someone placed a higher bid on the auction you were bidding on', $2)`,
-        [currentBidderResult.rows[0].bidder_id, auctionId]
-      );
+      await notificationService.createNotification({
+        userId: currentBidderResult.rows[0].bidder_id,
+        type: 'outbid',
+        title: 'You were outbid!',
+        message: `Someone placed a higher bid on "${auction.title}". Bid again to stay in the lead.`,
+        auctionId,
+        io
+      });
     }
 
-    await client.query('COMMIT');
-
-    // Emit WebSocket event for real-time update
-    const io = req.app.get('io');
+    // Broadcast live bid update to everyone watching this auction
     if (io) {
       io.to(`auction:${auctionId}`).emit('bid:placed', {
         auctionId,
@@ -246,7 +253,7 @@ const placeBid = async (req, res) => {
 // Enable auto-bid
 const enableAutoBid = async (req, res) => {
   const client = await getClient();
-  
+
   try {
     const { auctionId, maxAmount } = req.body;
     const { userId } = req.user;
@@ -299,7 +306,7 @@ const enableAutoBid = async (req, res) => {
     } else {
       // Place initial bid with auto-bid enabled
       const minBid = parseFloat(auction.current_bid) + 100;
-      
+
       await client.query(
         `INSERT INTO bids (auction_id, bidder_id, amount, is_auto_bid, max_auto_bid, status)
          VALUES ($1, $2, $3, true, $4, 'active')`,
@@ -364,7 +371,7 @@ const getMyBids = async (req, res) => {
     }
 
     queryText += ` ORDER BY b.bid_time DESC`;
-    
+
     const offset = (page - 1) * limit;
     queryText += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     queryParams.push(limit, offset);

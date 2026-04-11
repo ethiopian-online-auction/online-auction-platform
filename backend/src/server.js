@@ -63,19 +63,23 @@ app.use('/api/fraud', require('./routes/fraud.routes'));
 io.on('connection', (socket) => {
   console.log('✅ New client connected:', socket.id);
 
-  // Join auction room
+  // Join user's personal notification room
+  socket.on('user:join', (userId) => {
+    socket.join(`user:${userId}`);
+    console.log(`User ${userId} joined personal room`);
+  });
+
+  // Join auction room for live bid updates
   socket.on('auction:watch', (auctionId) => {
     socket.join(`auction:${auctionId}`);
-    console.log(`User ${socket.id} watching auction ${auctionId}`);
+    console.log(`Socket ${socket.id} watching auction ${auctionId}`);
   });
 
   // Leave auction room
   socket.on('auction:unwatch', (auctionId) => {
     socket.leave(`auction:${auctionId}`);
-    console.log(`User ${socket.id} stopped watching auction ${auctionId}`);
   });
 
-  // Handle disconnect
   socket.on('disconnect', () => {
     console.log('❌ Client disconnected:', socket.id);
   });

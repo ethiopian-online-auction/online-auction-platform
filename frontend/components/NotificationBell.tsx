@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { io as socketIO, Socket } from 'socket.io-client';
 
 interface Notification {
   id: string;
-  type: 'bid' | 'win' | 'outbid' | 'message' | 'payment' | 'auction';
+  type: 'bid' | 'win' | 'outbid' | 'message' | 'payment' | 'auction' | 'new_bid';
   title: string;
   message: string;
   time: string;
@@ -14,54 +16,73 @@ interface Notification {
 }
 
 export default function NotificationBell() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Fetch notifications from API
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const api = (await import('@/lib/api')).default;
-        const response = await api.getNotifications();
-        
-        if (response.success && response.data) {
-          const notifs = Array.isArray(response.data) ? response.data : (response.data.notifications || []);
-          
-          // Transform to match the Notification interface
-          const transformed = notifs.map((n: any) => ({
-            id: n.id,
-            type: n.type || 'message',
-            title: n.title,
-            message: n.message,
-            time: getTimeAgo(new Date(n.created_at)),
-            read: n.is_read || false,
-            link: n.link || '#'
-          }));
-          
-          setNotifications(transformed);
-        }
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const transform = (n: any): Notification => ({
+    id: n.id,
+    type: n.type || 'message',
+    title: n.title,
+    message: n.message,
+    time: getTimeAgo(new Date(n.created_at)),
+    read: n.is_read || false,
+    link: n.link || (n.related_auction_id ? `/auction/${n.related_auction_id}` : '#')
+  });
 
+  // Fetch notifications from API
+  const fetchNotifications = async () => {
+    try {
+      const api = (await import('@/lib/api')).default;
+      const response = await api.getNotifications();
+      if (response.success && response.data) {
+        const notifs = Array.isArray(response.data) ? response.data : (response.data.notifications || []);
+        setNotifications(notifs.map(transform));
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchNotifications();
-    
-    // Refresh notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    // Fallback polling every 60s (Socket.IO handles real-time)
+    const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
 
+  // Connect Socket.IO and join personal room for real-time notifications
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const socket = socketIO(process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000', {
+      transports: ['websocket'],
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      socket.emit('user:join', user.id);
+    });
+
+    socket.on('notification:new', (notif: any) => {
+      setNotifications(prev => [transform(notif), ...prev]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user?.id]);
+
   const getTimeAgo = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -74,7 +95,6 @@ export default function NotificationBell() {
         setIsOpen(false);
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -83,7 +103,7 @@ export default function NotificationBell() {
     try {
       const api = (await import('@/lib/api')).default;
       await api.markNotificationAsRead(id);
-      
+
       setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, read: true } : n)
       );
@@ -96,7 +116,7 @@ export default function NotificationBell() {
     try {
       const api = (await import('@/lib/api')).default;
       await api.markAllNotificationsAsRead();
-      
+
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (error) {
       console.error('Error marking all as read:', error);
@@ -169,9 +189,8 @@ export default function NotificationBell() {
                       markAsRead(notification.id);
                       setIsOpen(false);
                     }}
-                    className={`block p-4 hover:bg-gray-50 transition ${
-                      !notification.read ? 'bg-blue-50' : ''
-                    }`}
+                    className={`block p-4 hover:bg-gray-50 transition ${!notification.read ? 'bg-blue-50' : ''
+                      }`}
                   >
                     <div className="flex gap-3">
                       <div className="text-2xl flex-shrink-0">
