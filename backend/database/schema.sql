@@ -230,4 +230,7 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
 
 CREATE TRIGGER update_auctions_updated_at BEFORE UPDATE ON auctions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+<<<<<<<< HEAD:backend/database/schema.sql
 // Database initialized
+========
+>>>>>>>> e3e6eda (Save local changes):backend/database/migrations/database-schema.sql
