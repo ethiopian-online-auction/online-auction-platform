@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import Image from 'next/image';
+import BidRecommendation from '@/components/BidRecommendation';
 
 export default function AuctionDetailPage() {
   const params = useParams();
@@ -573,6 +574,13 @@ export default function AuctionDetailPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Your Bid (Min: {auction?.minBid?.toLocaleString() || '0'} ETB)
                   </label>
+                  {/* AI Bid Recommendation */}
+                  {auction?.id && !auctionEnded && (
+                    <BidRecommendation
+                      auctionId={auction.id}
+                      onBidSelect={(amount) => setBidAmount(String(amount))}
+                    />
+                  )}
                   <input
                     type="number"
                     value={bidAmount}

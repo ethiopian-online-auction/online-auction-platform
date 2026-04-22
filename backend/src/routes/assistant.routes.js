@@ -5,14 +5,20 @@ const {
   sendMessage,
   getHistory,
   getSuggestions,
-  getPopularQuestions
+  getPopularQuestions,
+  getBidRecommendation,
+  getCreateAuctionRecommendation
 } = require('../controllers/assistant.controller');
 
-// Public routes (no auth required for basic chat)
+// Public routes
 router.post('/message', sendMessage);
 router.get('/suggestions', getSuggestions);
 
-// Protected routes (require authentication)
+// Recommendation routes (optional auth — better with user context)
+router.get('/recommend/bid/:auctionId', verifyToken, getBidRecommendation);
+router.get('/recommend/create-auction/:category', verifyToken, getCreateAuctionRecommendation);
+
+// Protected routes
 router.get('/history', verifyToken, getHistory);
 
 // Admin routes

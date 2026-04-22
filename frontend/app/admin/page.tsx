@@ -192,15 +192,15 @@ export default function AdminPage() {
     return colors[tag] || 'bg-gray-50 text-gray-600 border border-gray-200';
   };
 
-  const handleSelectClient = (clientId: number) => {
-    setSelectedClients(prev => 
-      prev.includes(clientId) 
-        ? prev.filter(id => id !== clientId)
-        : [...prev, clientId]
+  const handleSelectClient = (clientId: string) => {
+    setSelectedClients(prev =>
+      prev.includes(clientId as any)
+        ? prev.filter(id => id !== (clientId as any))
+        : [...prev, clientId as any]
     );
   };
 
-  const handleDeleteClient = async (clientId: number) => {
+  const handleDeleteClient = async (clientId: string) => {
     if (!confirm('Are you sure you want to delete this client? This cannot be undone.')) return;
     try {
       const token = localStorage.getItem('token');
@@ -211,7 +211,7 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (json.success) {
-        setRealUsers(prev => prev.filter((u: any) => u.id !== clientId));
+        setRealUsers(prev => prev.filter((u: any) => String(u.id) !== String(clientId)));
       } else {
         alert('Failed to delete user: ' + (json.message || 'Unknown error'));
       }
@@ -220,7 +220,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleVerifyClient = async (clientId: number) => {
+  const handleVerifyClient = async (clientId: string) => {
     await handleVerifyUser(clientId, false);
   };
 
@@ -245,7 +245,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleVerifyUser = async (clientId: number, currentlyVerified: boolean) => {
+  const handleVerifyUser = async (clientId: string, currentlyVerified: boolean) => {
     const action = currentlyVerified ? 'unverify' : 'verify';
     if (!confirm(`Are you sure you want to ${action} this user?`)) return;
     try {
@@ -253,13 +253,13 @@ export default function AdminPage() {
       const res = await api.put(`/admin/users/${clientId}/verify`, {});
       if (res.success) {
         setRealUsers(prev => prev.map((u: any) =>
-          u.id === clientId ? { ...u, is_verified: !currentlyVerified } : u
+          String(u.id) === String(clientId) ? { ...u, is_verified: !currentlyVerified } : u
         ));
       }
     } catch { alert(`Failed to ${action} user`); }
   };
 
-  const handleBlacklistUser = async (clientId: number, currentlyBlocked: boolean) => {
+  const handleBlacklistUser = async (clientId: string, currentlyBlocked: boolean) => {
     const action = currentlyBlocked ? 'unblock' : 'block';
     if (!confirm(`Are you sure you want to ${action} this user?`)) return;
     try {
@@ -268,13 +268,13 @@ export default function AdminPage() {
       if (res.success) {
         alert(`User ${action}ed successfully`);
         setRealUsers(prev => prev.map((u: any) =>
-          u.id === clientId ? { ...u, is_blacklisted: !currentlyBlocked } : u
+          String(u.id) === String(clientId) ? { ...u, is_blacklisted: !currentlyBlocked } : u
         ));
       }
     } catch { alert(`Failed to ${action} user`); }
   };
 
-  const handleChangeRole = async (clientId: number, currentRole: string) => {
+  const handleChangeRole = async (clientId: string, currentRole: string) => {
     const roles = ['buyer', 'seller', 'admin'];
     const next = roles[(roles.indexOf(currentRole) + 1) % roles.length];
     if (!confirm(`Change role from "${currentRole}" to "${next}"?`)) return;
@@ -283,13 +283,13 @@ export default function AdminPage() {
       const res = await api.put(`/admin/users/${clientId}/role`, { role: next });
       if (res.success) {
         setRealUsers(prev => prev.map((u: any) =>
-          u.id === clientId ? { ...u, role: next } : u
+          String(u.id) === String(clientId) ? { ...u, role: next } : u
         ));
       }
     } catch { alert('Failed to change role'); }
   };
 
-  const handleResolveDispute = async (disputeId: number, resolution: string) => {
+  const handleResolveDispute = async (disputeId: string, resolution: string) => {
     const winnerMap: Record<string, string> = {
       'favor-buyer': 'buyer',
       'favor-seller': 'seller',
@@ -311,7 +311,7 @@ export default function AdminPage() {
       const json = await res.json();
       if (json.success) {
         setRealDisputes(prev => prev.map((d: any) =>
-          d.id === disputeId ? { ...d, status: 'resolved', resolution: label } : d
+          String(d.id) === String(disputeId) ? { ...d, status: 'resolved', resolution: label } : d
         ));
       } else {
         alert('Failed to resolve dispute: ' + (json.message || 'Unknown error'));
@@ -321,7 +321,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleReviewIssue = async (issueId: number, action: string) => {
+  const handleReviewIssue = async (issueId: string, action: string) => {
     const actionLabels: Record<string, string> = {
       investigate: 'Mark as Investigating',
       'warn-user': 'Warn the reported user',
@@ -343,7 +343,7 @@ export default function AdminPage() {
         const json = await res.json();
         if (json.success) {
           setRealReports(prev => prev.map((r: any) =>
-            r.id === issueId ? { ...r, status: 'investigating' } : r
+            String(r.id) === String(issueId) ? { ...r, status: 'investigating' } : r
           ));
         } else {
           alert('Failed: ' + (json.message || 'Unknown error'));
@@ -368,7 +368,7 @@ export default function AdminPage() {
             });
           }
           setRealReports(prev => prev.map((r: any) =>
-            r.id === issueId ? { ...r, status: 'reviewed', admin_action: 'warn' } : r
+            String(r.id) === String(issueId) ? { ...r, status: 'reviewed', admin_action: 'warn' } : r
           ));
           alert('✅ User warned and temporarily blocked.');
         } else {
@@ -383,7 +383,7 @@ export default function AdminPage() {
         const json = await res.json();
         if (json.success) {
           setRealReports(prev => prev.map((r: any) =>
-            r.id === issueId ? { ...r, status: 'dismissed' } : r
+            String(r.id) === String(issueId) ? { ...r, status: 'dismissed' } : r
           ));
         } else {
           alert('Failed: ' + (json.message || 'Unknown error'));
@@ -394,8 +394,8 @@ export default function AdminPage() {
     }
   };
 
-  const handleReleaseEscrow = async (transactionId: number) => {
-    const transaction = realTransactions.find((t: any) => t.id === transactionId);
+  const handleReleaseEscrow = async (transactionId: string) => {
+    const transaction = realTransactions.find((t: any) => String(t.id) === String(transactionId));
     if (!transaction) return;
 
     const shippingId = transaction.shipping_id || transaction.shippingId;
@@ -418,7 +418,7 @@ export default function AdminPage() {
       if (json.success) {
         alert(`✓ Funds Released!\n\nETB ${(json.data?.amount || transaction.amount || 0).toLocaleString()} released to seller.\nCommission: ETB ${(json.data?.commission || 0).toLocaleString()}`);
         setRealTransactions(prev => prev.map((t: any) =>
-          t.id === transactionId ? { ...t, status: 'released' } : t
+          String(t.id) === String(transactionId) ? { ...t, status: 'released' } : t
         ));
       } else {
         alert('Failed to release funds: ' + (json.message || 'Unknown error'));
@@ -428,8 +428,8 @@ export default function AdminPage() {
     }
   };
 
-  const handleVerifyShipping = (transactionId: number) => {
-    const transaction = realTransactions.find((t: any) => t.id === transactionId);
+  const handleVerifyShipping = (transactionId: string) => {
+    const transaction = realTransactions.find((t: any) => String(t.id) === String(transactionId));
     if (!transaction || !transaction.shippingId) {
       alert('No shipping ID available for verification.');
       return;
@@ -438,7 +438,7 @@ export default function AdminPage() {
     alert(`Shipping ID Verification\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nShipping ID: ${transaction.shippingId}\nBuyer: ${transaction.buyer}\nSeller: ${transaction.seller}\nAuction: ${transaction.auction}\nAmount: ETB ${transaction.amount.toLocaleString()}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nThe buyer has confirmed receiving the item by providing this shipping/tracking ID.\n\nPlease verify this tracking number with the courier service to confirm delivery before releasing funds.`);
   };
 
-  const handleApproveSeller = async (sellerId: number) => {
+  const handleApproveSeller = async (sellerId: string) => {
     if (!confirm('Approve this seller application?')) return;
     try {
       const token = localStorage.getItem('token');
@@ -450,7 +450,7 @@ export default function AdminPage() {
       const json = await res.json();
       if (json.success) {
         setRealSellers(prev => prev.map((s: any) =>
-          s.id === sellerId ? { ...s, status: 'approved' } : s
+          String(s.id) === String(sellerId) ? { ...s, status: 'approved' } : s
         ));
       } else {
         alert('Failed to approve: ' + (json.message || 'Unknown error'));
@@ -460,7 +460,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleRejectSeller = async (sellerId: number) => {
+  const handleRejectSeller = async (sellerId: string) => {
     const reason = prompt('Enter rejection reason:');
     if (!reason) return;
     try {
@@ -474,7 +474,7 @@ export default function AdminPage() {
       const json = await res.json();
       if (json.success) {
         setRealSellers(prev => prev.map((s: any) =>
-          s.id === sellerId ? { ...s, status: 'rejected', rejection_reason: reason } : s
+          String(s.id) === String(sellerId) ? { ...s, status: 'rejected', rejection_reason: reason } : s
         ));
       } else {
         alert('Failed to reject: ' + (json.message || 'Unknown error'));
@@ -484,11 +484,11 @@ export default function AdminPage() {
     }
   };
 
-  const handleViewAuction = (auctionId: number, auctionTitle: string) => {
+  const handleViewAuction = (auctionId: string, auctionTitle: string) => {
     router.push(`/auction/${auctionId}`);
   };
 
-  const handleDeleteAuction = async (auctionId: number, auctionTitle: string) => {
+  const handleDeleteAuction = async (auctionId: string, auctionTitle: string) => {
     if (!confirm(`Delete auction "${auctionTitle}"? This cannot be undone.`)) return;
     try {
       const token = localStorage.getItem('token');
@@ -499,7 +499,7 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (json.success) {
-        setRealAuctions(prev => prev.filter((a: any) => a.id !== auctionId));
+        setRealAuctions(prev => prev.filter((a: any) => String(a.id) !== String(auctionId)));
       } else {
         alert('Failed to delete auction: ' + (json.message || 'Unknown error'));
       }

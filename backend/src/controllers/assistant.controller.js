@@ -1,4 +1,5 @@
 const aiAssistantService = require('../services/ai-assistant.service');
+const recommendationService = require('../services/recommendation.service');
 
 /**
  * Send message to AI assistant
@@ -90,9 +91,39 @@ const getPopularQuestions = async (req, res) => {
   }
 };
 
+/**
+ * Get bid recommendation for a specific auction
+ */
+const getBidRecommendation = async (req, res) => {
+  try {
+    const { auctionId } = req.params;
+    const userId = req.user?.userId || null;
+    const result = await recommendationService.getBidRecommendation(auctionId, userId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to get bid recommendation' });
+  }
+};
+
+/**
+ * Get auction creation recommendations for a category
+ */
+const getCreateAuctionRecommendation = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const userId = req.user?.userId || null;
+    const result = await recommendationService.getCreateAuctionRecommendation(category, userId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to get auction recommendation' });
+  }
+};
+
 module.exports = {
   sendMessage,
   getHistory,
   getSuggestions,
-  getPopularQuestions
+  getPopularQuestions,
+  getBidRecommendation,
+  getCreateAuctionRecommendation
 };

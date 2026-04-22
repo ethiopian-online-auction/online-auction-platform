@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
 import Image from 'next/image';
+import AuctionCreateRecommendation from '@/components/AuctionCreateRecommendation';
 
 export default function CreateAuctionPage() {
   const router = useRouter();
@@ -287,7 +288,6 @@ export default function CreateAuctionPage() {
                     ))}
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Condition
@@ -309,7 +309,24 @@ export default function CreateAuctionPage() {
             </div>
           </div>
 
-          {/* Pricing */}
+          {/* AI Pricing Recommendation — shows when category is selected */}
+          {formData.category && (
+            <AuctionCreateRecommendation
+              category={formData.category}
+              onApplySuggestion={(field, value) => {
+                if (field === 'startingBid') {
+                  setFormData(prev => ({ ...prev, startingBid: String(value) }));
+                } else if (field === 'duration') {
+                  const now = new Date();
+                  const end = new Date(now);
+                  end.setDate(end.getDate() + value);
+                  const pad = (n: number) => String(n).padStart(2, '0');
+                  const endDate = `${end.getFullYear()}-${pad(end.getMonth()+1)}-${pad(end.getDate())}`;
+                  setFormData(prev => ({ ...prev, endDate }));
+                }
+              }}
+            />
+          )}          {/* Pricing */}
           <div className="border-t pt-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Pricing</h2>
             
