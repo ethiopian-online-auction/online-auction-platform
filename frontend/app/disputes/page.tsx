@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
 
 export default function DisputesPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [disputes, setDisputes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDispute, setSelectedDispute] = useState<any>(null);
@@ -100,17 +102,17 @@ export default function DisputesPage() {
                         {dispute.status.replace('_', ' ').toUpperCase()}
                       </span>
                     </div>
-                    
+
                     <p className="text-sm text-gray-600 mb-3">
                       <span className="font-medium">Reason:</span> {dispute.reason}
                     </p>
-                    
+
                     {dispute.description && (
                       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                         {dispute.description}
                       </p>
                     )}
-                    
+
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                       <span>Seller: {dispute.seller_name}</span>
                       <span>•</span>
@@ -123,9 +125,9 @@ export default function DisputesPage() {
                       )}
                     </div>
                   </div>
-                  
+
                   <button className="ml-4 text-blue-600 hover:text-blue-700 font-medium text-sm">
-                    View Details →
+                    {t('view')} Details →
                   </button>
                 </div>
               </div>
@@ -211,7 +213,7 @@ export default function DisputesPage() {
                 }}
                 className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
               >
-                Close
+                {t('cancel')}
               </button>
             </div>
           </div>

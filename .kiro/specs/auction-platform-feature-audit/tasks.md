@@ -30,7 +30,7 @@ Each feature builds independently; encryption wiring is last to avoid breaking e
     - **Validates: Requirements 1.6**
     - Simulate missing-key scenario via the fallback path; assert result equals `translations['en'][key]` or `''`
 
-- [ ] 2. Add serialization utilities to i18n.ts
+- [x] 2. Add serialization utilities to i18n.ts
   - Implement `serializeMap(map: TranslationKeys): string` — returns `JSON.stringify(map)`
   - Implement `deserializeMap(json: string): TranslationKeys | { error: string }` — validates all required keys are present; returns `{ error: "Missing key: <firstMissingKey>" }` on failure
   - _Requirements: 4.1, 4.2, 4.3_
@@ -44,7 +44,7 @@ Each feature builds independently; encryption wiring is last to avoid breaking e
     - Test that `deserializeMap(JSON.stringify({ home: 'HOME' }))` returns `{ error: /Missing key:/ }`
     - _Requirements: 4.3_
 
-- [ ] 3. Wire t() calls into all untranslated pages
+- [x] 3. Wire t() calls into all untranslated pages
   - Update `frontend/app/admin/page.tsx`, `frontend/app/create-auction/page.tsx`, `frontend/app/dashboard/page.tsx`, disputes, checkout, settings, and become-seller pages to replace hardcoded English strings with `t(lang, key)` calls using the `LanguageContext`
   - _Requirements: 1.2, 1.3_
 

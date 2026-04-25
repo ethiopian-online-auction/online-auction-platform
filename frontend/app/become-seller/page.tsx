@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import Navbar from '@/components/Navbar';
 import FaydaVerify from '@/components/FaydaVerify';
 
 export default function BecomeSellerPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [existingApplication, setExistingApplication] = useState<any>(null);
   const [kycVerified, setKycVerified] = useState(false);
@@ -37,7 +39,7 @@ export default function BecomeSellerPage() {
     try {
       const api = (await import('@/lib/api')).default;
       const response = await api.get('/seller/my-application');
-      
+
       if (response.success) {
         setExistingApplication(response.data);
         // Populate form with existing data
@@ -92,7 +94,7 @@ export default function BecomeSellerPage() {
 
     try {
       const api = (await import('@/lib/api')).default;
-      
+
       // Submit application
       const response = await api.post('/seller/apply', {
         ...formData,
@@ -115,11 +117,11 @@ export default function BecomeSellerPage() {
 
   const handleResubmit = async () => {
     if (!existingApplication) return;
-    
+
     setLoading(true);
     try {
       const api = (await import('@/lib/api')).default;
-      
+
       const response = await api.put(`/seller/application/${existingApplication.id}`, {
         ...formData,
         documents: documents
@@ -151,20 +153,20 @@ export default function BecomeSellerPage() {
         <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="bg-white rounded-xl shadow-lg p-8 text-center">
             <div className="text-6xl mb-4">
-              {existingApplication.status === 'approved' ? '✅' : 
-               existingApplication.status === 'under_review' ? '🔍' : '⏳'}
+              {existingApplication.status === 'approved' ? '✅' :
+                existingApplication.status === 'under_review' ? '🔍' : '⏳'}
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
               {existingApplication.status === 'approved' ? 'Application Approved!' :
-               existingApplication.status === 'under_review' ? 'Application Under Review' :
-               'Application Pending'}
+                existingApplication.status === 'under_review' ? 'Application Under Review' :
+                  'Application Pending'}
             </h1>
             <p className="text-gray-600 mb-6">
-              {existingApplication.status === 'approved' 
+              {existingApplication.status === 'approved'
                 ? 'Congratulations! Your seller application has been approved. You can now create auctions.'
                 : 'Your seller application is currently being reviewed by our admin team. You will be notified once a decision is made.'}
             </p>
-            
+
             <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
               <h3 className="font-bold text-gray-900 mb-4">Application Details</h3>
               <div className="space-y-2 text-sm">
@@ -172,12 +174,11 @@ export default function BecomeSellerPage() {
                 <p><span className="font-medium">Business Type:</span> {existingApplication.business_type}</p>
                 <p><span className="font-medium">Email:</span> {existingApplication.email}</p>
                 <p><span className="font-medium">Phone:</span> {existingApplication.phone}</p>
-                <p><span className="font-medium">Status:</span> 
-                  <span className={`ml-2 px-3 py-1 rounded-full text-xs font-medium ${
-                    existingApplication.status === 'approved' ? 'bg-green-100 text-green-700' :
+                <p><span className="font-medium">Status:</span>
+                  <span className={`ml-2 px-3 py-1 rounded-full text-xs font-medium ${existingApplication.status === 'approved' ? 'bg-green-100 text-green-700' :
                     existingApplication.status === 'under_review' ? 'bg-blue-100 text-blue-700' :
-                    'bg-orange-100 text-orange-700'
-                  }`}>
+                      'bg-orange-100 text-orange-700'
+                    }`}>
                     {existingApplication.status}
                   </span>
                 </p>
@@ -200,19 +201,19 @@ export default function BecomeSellerPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              {existingApplication?.status === 'rejected' ? 'Resubmit Seller Application' : 'Become a Seller'}
+              {existingApplication?.status === 'rejected' ? t('becomeSeller') : t('becomeSeller')}
             </h1>
             <p className="text-gray-600">
-              {existingApplication?.status === 'rejected' 
+              {existingApplication?.status === 'rejected'
                 ? 'Your previous application was rejected. Please update your information and resubmit.'
                 : 'Fill out the form below to apply to become a seller on our platform'}
             </p>
-            
+
             {existingApplication?.status === 'rejected' && existingApplication.rejection_reason && (
               <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4 text-left">
                 <p className="text-sm font-medium text-red-900 mb-1">Rejection Reason:</p>
@@ -225,7 +226,7 @@ export default function BecomeSellerPage() {
             {/* Business Information */}
             <div className="border-b border-gray-200 pb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Business Information</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -294,7 +295,7 @@ export default function BecomeSellerPage() {
             {/* Contact Information */}
             <div className="border-b border-gray-200 pb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Contact Information</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -344,11 +345,11 @@ export default function BecomeSellerPage() {
 
             {/* Document Upload */}
             <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Documents (Optional)</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">{t('uploadImages')}</h2>
               <p className="text-sm text-gray-600 mb-4">
                 Upload relevant business documents to speed up the approval process
               </p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -433,9 +434,9 @@ export default function BecomeSellerPage() {
                 onClick={() => router.push('/dashboard')}
                 className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
               >
-                Cancel
+                {t('cancel')}
               </button>
-              
+
               {existingApplication?.status === 'rejected' ? (
                 <button
                   type="button"
