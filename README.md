@@ -69,7 +69,7 @@ Frontend runs on: **http://localhost:3000**
 -  Bid history tracking
 -  Dispute resolution system
 -  Report auctions/sellers
--  Multi-language support (English/Amharic)
+-  Multi-language support (English/Amharic/Afan Oromo)
 -  AI Virtual Assistant (24/7 help)
 
 ### 🏪 Seller Features
@@ -348,9 +348,9 @@ Developed for online auction platform requirements.
 
 ---
 
-**Last Updated:** March 9, 2026  
-**Version:** 1.0.0  
-**Status:** ✅ Production Ready
+**Last Updated:** April 25, 2026  
+**Version:** 1.1.0  
+**Status:** ✅ Active Development
 #   e t h i o p i a n - o n l i n e - a u c t i o n 
  
  
